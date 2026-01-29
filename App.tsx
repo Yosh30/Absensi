@@ -25,7 +25,7 @@ const SplashScreen = ({ logoUrl }: { logoUrl?: string | null }) => (
       </div>
     </div>
     <h2 className="text-lg font-black text-slate-900 tracking-tight uppercase">VOS</h2>
-    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">baloading</p>
+    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Wait ges ba ambe data...</p>
   </div>
 );
 

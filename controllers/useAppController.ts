@@ -140,6 +140,11 @@ export const useAppController = () => {
 
   useEffect(() => {
     const initSession = async () => {
+      // Force stop loading after 8 seconds (timeout safety)
+      const safetyTimeout = setTimeout(() => {
+        setLoading(false);
+      }, 8000);
+
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -159,6 +164,7 @@ export const useAppController = () => {
       } finally {
         // Ensure loading is turned off eventually
         setLoading(false);
+        clearTimeout(safetyTimeout);
       }
     };
 
