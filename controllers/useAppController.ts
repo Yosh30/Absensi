@@ -76,7 +76,8 @@ export const useAppController = () => {
       const activeId = userId || (await supabase.auth.getSession()).data.session?.user.id;
       
       if (!activeId) {
-        setState(prev => ({ ...prev, currentUser: null }));
+        // Jangan clear state jika hanya refresh background dan user belum logout eksplisit
+        // setState(prev => ({ ...prev, currentUser: null })); 
         return;
       }
 
@@ -137,6 +138,61 @@ export const useAppController = () => {
       // Don't clear state on fetch error (keep offline data)
     }
   }, []);
+
+  // --- 1. LISTENER PWA VISIBILITY (AUTO-REFRESH SAAT BUKA APLIKASI) ---
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // Jika tab/aplikasi menjadi visible (aktif kembali)
+      if (document.visibilityState === 'visible' && state.currentUser) {
+        console.log('App in foreground, refreshing data...');
+        fetchData(state.currentUser.id);
+      }
+    };
+
+    const handleFocus = () => {
+       if (state.currentUser) {
+         fetchData(state.currentUser.id);
+       }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [state.currentUser, fetchData]);
+
+  // --- 2. SUPABASE REALTIME SUBSCRIPTION ---
+  useEffect(() => {
+    if (!state.currentUser) return;
+
+    // Subscribe ke perubahan pada tabel-tabel penting
+    const channel = supabase
+      .channel('db_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
+        console.log('Realtime: Events updated');
+        fetchData(state.currentUser?.id);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, () => {
+        console.log('Realtime: Attendance updated');
+        fetchData(state.currentUser?.id);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => {
+        console.log('Realtime: Announcements updated');
+        fetchData(state.currentUser?.id);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        console.log('Realtime: Profiles updated');
+        fetchData(state.currentUser?.id);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [state.currentUser, fetchData]);
 
   useEffect(() => {
     const initSession = async () => {
@@ -257,7 +313,7 @@ export const useAppController = () => {
   const deleteUser = async (id: string) => {
     const { error } = await supabase.from('profiles').delete().eq('id', id);
     if (error) throw error;
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const signUp = async (userData: Omit<User, 'id' | 'status'>) => {
@@ -289,7 +345,7 @@ export const useAppController = () => {
 
   const approveUser = async (userId: string) => {
     await supabase.from('profiles').update({ status: UserStatus.ACTIVE }).eq('id', userId);
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const updateUser = async (id: string, userData: Partial<User>) => {
@@ -302,7 +358,7 @@ export const useAppController = () => {
         status: userData.status
       }).eq('id', id);
     if (error) throw error;
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const registerUser = async (userData: Omit<User, 'id' | 'status'>) => {
@@ -332,8 +388,8 @@ export const useAppController = () => {
       const hashedPassword = await hashString(passwordToUse);
       await supabase.from('profiles').update({ password: hashedPassword }).eq('id', data.user.id);
     }
-
-    await fetchData();
+    
+    // Realtime will handle refresh
   };
 
   const resetUserPassword = async (userId: string) => {
@@ -344,7 +400,7 @@ export const useAppController = () => {
       const hashedPassword = await hashString('123456');
       await supabase.from('profiles').update({ password: hashedPassword }).eq('id', userId);
     }
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const submitAttendance = async (eventId: string, status: 'present' | 'absent', reason?: string) => {
@@ -391,7 +447,7 @@ export const useAppController = () => {
       is_important: eventData.isImportant,
       category: eventData.category
     });
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const updateEvent = async (id: string, eventData: Omit<ChoirEvent, 'id'>) => {
@@ -403,12 +459,12 @@ export const useAppController = () => {
       is_important: eventData.isImportant,
       category: eventData.category
     }).eq('id', id);
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const deleteEvent = async (id: string) => {
     await supabase.from('events').delete().eq('id', id);
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const addAnnouncement = async (title: string, content: string) => {
@@ -418,17 +474,17 @@ export const useAppController = () => {
       content,
       author_id: state.currentUser.id
     });
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const updateAnnouncement = async (id: string, title: string, content: string) => {
     await supabase.from('announcements').update({ title, content }).eq('id', id);
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const deleteAnnouncement = async (id: string) => {
     await supabase.from('announcements').delete().eq('id', id);
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const adminSubmitAttendance = async (userId: string, eventId: string, status: 'present' | 'absent', reason?: string) => {
@@ -439,7 +495,7 @@ export const useAppController = () => {
       reason: reason || null,
       timestamp: new Date().toISOString()
     }, { onConflict: 'user_id,event_id' });
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   const adminRemoveAttendance = async (userId: string, eventId: string) => {
@@ -449,7 +505,7 @@ export const useAppController = () => {
       .eq('user_id', userId)
       .eq('event_id', eventId);
     if (error) throw error;
-    await fetchData();
+    // Realtime will handle refresh
   };
 
   return {
