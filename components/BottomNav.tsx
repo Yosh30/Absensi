@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Calendar, Megaphone, User as UserIcon, Shield } from 'lucide-react';
@@ -23,7 +22,7 @@ export const BottomNav = () => {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around items-center py-4 px-6 safe-area-bottom z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around items-center py-6 px-6 safe-area-bottom z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] lg:hidden">
       {links.map((link) => {
         const isActive = location.pathname === link.to;
         return (

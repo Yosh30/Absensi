@@ -26,11 +26,7 @@ export const Sidebar = () => {
       <div className="p-6 lg:p-8">
         <div className="flex items-center gap-3 mb-10">
           <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-purple-100 border border-purple-400 overflow-hidden relative">
-            {state.appLogoUrl ? (
-              <img src={state.appLogoUrl} alt="VOS Logo" className="w-full h-full object-cover bg-white" />
-            ) : (
-              <Music size={20} strokeWidth={2.5} />
-            )}
+            <img src={state.appLogoUrl || "assets/vos-logo.png"} alt="VOS Logo" className="w-full h-full object-cover bg-white" />
           </div>
           <div>
             <h1 className="text-base lg:text-lg font-black text-slate-900 tracking-tight leading-none uppercase">Absensi</h1>

@@ -11,28 +11,43 @@
     <!-- PWA Manifest with ID for dynamic injection -->
     <link rel="manifest" href="manifest.json" id="app-manifest">
     
-    <!-- Script to dynamically update manifest icon based on DB settings or Default Theme -->
+    <!-- Script to dynamically update manifest icon based on Asset Logo from Supabase -->
     <script>
-      (function() {
+      (async function() {
         try {
-          // 1. Define the Default Logo (Purple Square + Music Icon) matching Home Page style
-          // We use an SVG Data URI so it looks perfect without needing an external file
-          const defaultSvg = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24">
-              <rect width="24" height="24" fill="#6a3d7b" rx="6" />
-              <path d="M9 18V5l12-2v13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              <circle cx="6" cy="18" r="3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              <circle cx="18" cy="16" r="3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            </svg>
-          `.trim();
-          const defaultIconUrl = "data:image/svg+xml;base64," + btoa(defaultSvg);
+          // 1. Default Local Asset Logo
+          let logoUrl = "assets/vos-logo.png";
 
-          // 2. Helper to set manifest
-          const setManifest = (iconUrl, isSvg = false) => {
+          // 2. Try Fetch from Supabase
+          try {
+             const supabaseUrl = 'https://mjumoowpjypshczjnlgp.supabase.co';
+             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qdW1vb3dwanlwc2hjempubGdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyMDAxMTIsImV4cCI6MjA4NDc3NjExMn0.f4_gJ7ncejQ4KVejyyicFaEsdCKzogAAkusvOuceaVc';
+             
+             const response = await fetch(`${supabaseUrl}/rest/v1/app_settings?key=eq.app_logo_url&select=value`, {
+                headers: {
+                   'apikey': supabaseKey,
+                   'Authorization': `Bearer ${supabaseKey}`
+                }
+             });
+             
+             if (response.ok) {
+                 const data = await response.json();
+                 if (data && data.length > 0 && data[0].value) {
+                    logoUrl = data[0].value;
+                 }
+             }
+          } catch (err) {
+             console.log("Using default logo (offline/error)", err);
+          }
+
+          // 3. Helper to set manifest
+          const setManifest = (iconUrl) => {
             const manifestLink = document.getElementById('app-manifest');
-            // If using the generated SVG, use specific mime type, otherwise PNG
-            const type = isSvg ? "image/svg+xml" : "image/png";
+            const type = "image/png";
             
+            // CRITICAL FIX: start_url must be ABSOLUTE when using Blob manifest
+            const appUrl = window.location.origin + window.location.pathname;
+
             const dynamicManifest = {
               "short_name": "VOS Absensi",
               "name": "Voice of Soul Attendance",
@@ -40,7 +55,8 @@
                 { "src": iconUrl, "sizes": "192x192", "type": type },
                 { "src": iconUrl, "sizes": "512x512", "type": type }
               ],
-              "start_url": ".",
+              "start_url": appUrl, 
+              "scope": appUrl,
               "display": "standalone",
               "theme_color": "#6a3d7b",
               "background_color": "#f8fafc",
@@ -55,29 +71,14 @@
             if (appleIcon) appleIcon.href = iconUrl;
           };
 
-          // 3. Check LocalStorage for Custom Logo from DB
-          const savedState = localStorage.getItem('vos_app_state');
-          let customLogo = null;
-          
-          if (savedState) {
-            const parsed = JSON.parse(savedState);
-            if (parsed.appLogoUrl) customLogo = parsed.appLogoUrl;
-          }
-
-          // 4. Apply Custom Logo OR Default Theme Logo
-          if (customLogo) {
-            console.log('Using Custom DB Logo for PWA');
-            setManifest(customLogo, false);
-          } else {
-            console.log('Using Default Theme Logo for PWA');
-            setManifest(defaultIconUrl, true);
-          }
+          // 4. Apply Asset Logo
+          setManifest(logoUrl);
 
         } catch(e) { console.log('Error init manifest:', e); }
       })();
     </script>
 
-    <link rel="apple-touch-icon" id="apple-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxyZWN0IHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0iIzZhM2Q3YiIgcng9IjYiIC8+PHBhdGggZD0iTTkgMThWNWwxMi0ydjEzIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjYiIGN5PSIxOCIgcj0iMyIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGZpbGw9Im5vbmUiLz48Y2lyY2xlIGN4PSIxOCIgY3k9IjE2IiByPSIzIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==">
+    <link rel="apple-touch-icon" id="apple-icon" href="assets/vos-logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {

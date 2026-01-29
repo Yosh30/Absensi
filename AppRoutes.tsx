@@ -28,17 +28,17 @@ const ScrollToTop = () => {
 };
 
 // Wrapper for pages that require authentication (Dashboard, etc.)
-const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { state } = useApp();
   // If not logged in, redirect to Login
-  return state.currentUser ? children : <Navigate to={ROUTES.LOGIN} replace />;
+  return state.currentUser ? <>{children}</> : <Navigate to={ROUTES.LOGIN} replace />;
 };
 
 // Wrapper for pages that are ONLY for guests (Login, Signup)
-const PublicRoute = ({ children }: { children: React.ReactElement }) => {
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { state } = useApp();
   // If already logged in, redirect to Home
-  return !state.currentUser ? children : <Navigate to={ROUTES.HOME} replace />;
+  return !state.currentUser ? <>{children}</> : <Navigate to={ROUTES.HOME} replace />;
 };
 
 export const AppRoutes = () => {

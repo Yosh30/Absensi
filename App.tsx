@@ -18,11 +18,7 @@ const SplashScreen = ({ logoUrl }: { logoUrl?: string | null }) => (
   <div className="fixed inset-0 bg-white flex flex-col items-center justify-center z-[9999]">
     <div className="relative mb-8">
       <div className="w-20 h-20 bg-purple-600 rounded-[28px] flex items-center justify-center text-white shadow-2xl shadow-purple-100 animate-pulse overflow-hidden border-4 border-white">
-        {logoUrl ? (
-          <img src={logoUrl} alt="VOS Logo" className="w-full h-full object-cover bg-white" />
-        ) : (
-          <Music size={40} strokeWidth={2.5} />
-        )}
+        <img src={logoUrl || "assets/vos-logo.png"} alt="VOS Logo" className="w-full h-full object-cover bg-white" />
       </div>
       <div className="absolute -bottom-2 -right-2 bg-white p-1.5 rounded-full shadow-md border border-slate-50">
         <Loader2 className="text-purple-600 animate-spin" size={16} />
@@ -53,7 +49,7 @@ const AppContent = () => {
     <div className="flex min-h-screen bg-slate-50 text-slate-900">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 relative">
-        <div className="flex-1 pb-24 lg:pb-8">
+        <div className="flex-1 pb-32 lg:pb-8">
           <div className="max-w-7xl mx-auto lg:px-8">
             <AppRoutes />
           </div>

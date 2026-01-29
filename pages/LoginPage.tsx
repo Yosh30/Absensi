@@ -5,7 +5,7 @@ import { useApp } from '../App';
 import { ROUTES } from '../constants/routes';
 
 export const LoginPage = () => {
-  const { state, login } = useApp();
+  const { login, state } = useApp();
   const navigate = useNavigate();
   
   const [isProcessing, setIsProcessing] = React.useState(false);
@@ -41,14 +41,6 @@ export const LoginPage = () => {
     }
   };
 
-  const handleQuickLogin = (role: 'admin' | 'user') => {
-    if (role === 'admin') {
-      handleLogin(undefined, 'admin@vos.com', 'admin1234');
-    } else {
-      handleLogin(undefined, 'Daftar@example.com', '123456');
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50">
       <div className="w-full max-w-md bg-white rounded-[32px] p-8 lg:p-10 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-300">
@@ -57,11 +49,7 @@ export const LoginPage = () => {
           <div className="text-center">
             {/* Logo Container updated to match App Icon style */}
             <div className="w-24 h-24 mx-auto mb-6 flex items-center justify-center rounded-[28px] shadow-2xl shadow-purple-100 border-4 border-white bg-purple-600 overflow-hidden relative">
-              {state.appLogoUrl ? (
-                  <img src={state.appLogoUrl} alt="App Logo" className="w-full h-full object-cover bg-white" />
-              ) : (
-                  <Music size={40} strokeWidth={2.5} className="text-white" />
-              )}
+              <img src={state.appLogoUrl || "assets/vos-logo.png"} alt="App Logo" className="w-full h-full object-cover bg-white" />
             </div>
             
             <h1 className="text-3xl font-black text-purple-600 tracking-tight uppercase">VOS</h1>
@@ -120,27 +108,6 @@ export const LoginPage = () => {
               {isProcessing ? <Loader2 size={18} className="animate-spin" /> : 'Masuk'}
             </button>
           </form>
-
-          {/* Developer Login Shortcuts */}
-          <div className="pt-2 border-t border-slate-100 space-y-3">
-            <p className="text-center text-[8px] font-black text-slate-300 uppercase tracking-widest">Developer Quick Login</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button 
-                onClick={() => handleQuickLogin('admin')}
-                disabled={isProcessing}
-                className="flex items-center justify-center gap-2 py-2 px-4 bg-purple-50 text-purple-600 rounded-xl text-[9px] font-black uppercase tracking-widest border border-purple-100 hover:bg-purple-100 active:scale-95 transition-all"
-              >
-                <ShieldCheck size={14} /> Admin
-              </button>
-              <button 
-                onClick={() => handleQuickLogin('user')}
-                disabled={isProcessing}
-                className="flex items-center justify-center gap-2 py-2 px-4 bg-slate-100 text-slate-600 rounded-xl text-[9px] font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-200 active:scale-95 transition-all"
-              >
-                <User size={14} /> User
-              </button>
-            </div>
-          </div>
 
           <div className="pt-4 text-center">
             <p className="text-[11px] font-bold text-slate-400">Belum terdaftar sebagai anggota?</p>

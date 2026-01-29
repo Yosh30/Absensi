@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { LogOut, User as UserIcon, Phone, ShieldCheck, Calendar as CalendarIcon, ChevronRight, Activity, Download, Smartphone, Share } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -49,7 +48,7 @@ export const ProfilePage = () => {
   };
 
   return (
-    <div className="pb-24 lg:pb-8 bg-slate-50 min-h-screen">
+    <div className="pb-32 lg:pb-8 bg-slate-50 min-h-screen">
       {/* COMPACT FIXED HEADER */}
       <div className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-b border-purple-100 shadow-sm lg:static lg:bg-transparent lg:border-none lg:shadow-none">
         <div className="bg-white lg:bg-transparent pt-5 pb-3 px-6 lg:px-0">
@@ -77,43 +76,6 @@ export const ProfilePage = () => {
           </div>
         </div>
         
-        {/* PWA INSTALLATION SECTION */}
-        {(isInstallable || isIOS) && (
-          <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-6 text-white shadow-xl shadow-slate-200">
-             <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
-                   <Download className="text-white" size={24} />
-                </div>
-                <div className="flex-1">
-                   <h3 className="font-black text-lg leading-tight">Install Aplikasi</h3>
-                   <p className="text-[10px] opacity-70 mt-1 leading-relaxed">
-                     {isIOS 
-                       ? "Untuk pengguna iOS (iPhone/iPad), install manual:" 
-                       : "Pasang aplikasi VOS di layar utama HP Anda untuk akses lebih cepat dan offline."}
-                   </p>
-                   
-                   {isIOS ? (
-                      <div className="mt-3 bg-white/10 p-3 rounded-xl border border-white/10">
-                         <p className="text-[10px] font-bold flex items-center gap-2">
-                           1. Klik tombol <Share size={12} /> Share di browser
-                         </p>
-                         <p className="text-[10px] font-bold mt-1 flex items-center gap-2">
-                           2. Pilih "Add to Home Screen"
-                         </p>
-                      </div>
-                   ) : (
-                      <button 
-                        onClick={installApp}
-                        className="mt-4 px-6 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-colors"
-                      >
-                        Install Sekarang
-                      </button>
-                   )}
-                </div>
-             </div>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Calendar Shortcut */}
           <button 
@@ -159,6 +121,43 @@ export const ProfilePage = () => {
         >
           <LogOut size={18} strokeWidth={3} /> Keluar Aplikasi
         </button>
+
+        {/* PWA INSTALLATION SECTION */}
+        {(isInstallable || isIOS) && (
+          <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-6 text-white shadow-xl shadow-slate-200">
+             <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
+                   <Download className="text-white" size={24} />
+                </div>
+                <div className="flex-1">
+                   <h3 className="font-black text-lg leading-tight">Install Aplikasi</h3>
+                   <p className="text-[10px] opacity-70 mt-1 leading-relaxed">
+                     {isIOS 
+                       ? "Untuk pengguna iOS (iPhone/iPad), install manual:" 
+                       : "Pasang aplikasi VOS di layar utama HP Anda untuk akses lebih cepat dan offline."}
+                   </p>
+                   
+                   {isIOS ? (
+                      <div className="mt-3 bg-white/10 p-3 rounded-xl border border-white/10">
+                         <p className="text-[10px] font-bold flex items-center gap-2">
+                           1. Klik tombol <Share size={12} /> Share di browser
+                         </p>
+                         <p className="text-[10px] font-bold mt-1 flex items-center gap-2">
+                           2. Pilih "Add to Home Screen"
+                         </p>
+                      </div>
+                   ) : (
+                      <button 
+                        onClick={installApp}
+                        className="mt-4 px-6 py-3 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-colors"
+                      >
+                        Install Sekarang
+                      </button>
+                   )}
+                </div>
+             </div>
+          </div>
+        )}
       </main>
     </div>
   );
