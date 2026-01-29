@@ -77,7 +77,7 @@ export const LoginPage = () => {
                   required
                   disabled={isProcessing}
                   className="w-full p-4 pl-12 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-purple-500/10 focus:border-purple-600 outline-none transition-all font-bold text-sm disabled:opacity-50"
-                  placeholder="nama@vos.com"
+                  placeholder="email@example.com"
                   value={loginEmail}
                   onChange={(e) => { setLoginEmail(e.target.value); setError(''); setSuccess(''); }}
                 />
