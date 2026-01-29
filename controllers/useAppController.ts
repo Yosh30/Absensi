@@ -190,6 +190,16 @@ export const useAppController = () => {
     };
   }, [fetchData]);
 
+  // Utility to hash password for storing in profiles (if requested)
+  // Note: Supabase Auth already handles password securely in auth.users.
+  // This is for the custom 'password' column in public.profiles.
+  const hashString = async (str: string) => {
+    const msgBuffer = new TextEncoder().encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
   const login = async (email: string, password?: string) => {
     // Manual login always triggers loading
     setLoading(true);
@@ -251,6 +261,7 @@ export const useAppController = () => {
   };
 
   const signUp = async (userData: Omit<User, 'id' | 'status'>) => {
+    // 1. SignUp to Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email: userData.email,
       password: userData.password || '',
@@ -265,6 +276,13 @@ export const useAppController = () => {
       }
     });
     if (error) throw error;
+
+    // 2. Manually update 'password' column in public.profiles with Hash
+    if (data.user && userData.password) {
+      const hashedPassword = await hashString(userData.password);
+      await supabase.from('profiles').update({ password: hashedPassword }).eq('id', data.user.id);
+    }
+
     await supabase.auth.signOut();
     return data;
   };
@@ -292,9 +310,11 @@ export const useAppController = () => {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
     });
 
-    const { error } = await tempSupabase.auth.signUp({
+    const passwordToUse = userData.password || '123456';
+
+    const { data, error } = await tempSupabase.auth.signUp({
       email: userData.email,
-      password: userData.password || '123456',
+      password: passwordToUse,
       options: {
         data: {
           name: userData.name,
@@ -306,13 +326,23 @@ export const useAppController = () => {
       }
     });
     if (error) throw error;
+    
+    // Manually update 'password' column in public.profiles with Hash
+    if (data.user) {
+      const hashedPassword = await hashString(passwordToUse);
+      await supabase.from('profiles').update({ password: hashedPassword }).eq('id', data.user.id);
+    }
+
     await fetchData();
   };
 
   const resetUserPassword = async (userId: string) => {
     const { error } = await supabase.rpc('reset_user_password_default', { target_user_id: userId });
+    
+    // If RPC failed (e.g. not defined), we update the profile table as fallback
     if (error) {
-      await supabase.from('profiles').update({ password: '123456' }).eq('id', userId);
+      const hashedPassword = await hashString('123456');
+      await supabase.from('profiles').update({ password: hashedPassword }).eq('id', userId);
     }
     await fetchData();
   };
